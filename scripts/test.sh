@@ -7,7 +7,6 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 IMAGE="assignment-a74a4e69-b7ad-49cc-986f-f6e79e48673d"
 CONF="${1:-$ROOT_DIR/conf.yaml}"
-SHA_FILE="$ROOT_DIR/.dockerfile_sha"
 CONTAINER_ID=""
 
 cleanup() {
@@ -18,16 +17,15 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Rebuild only if Dockerfile changed
-CURRENT_SHA=$(shasum -a 256 "$ROOT_DIR/Dockerfile" | awk '{print $1}')
-STORED_SHA=$(cat "$SHA_FILE" 2>/dev/null || echo "")
+# Rebuild if image doesn't exist or there are non-README changes
+IMAGE_EXISTS=$(docker image inspect "$IMAGE" > /dev/null 2>&1 && echo "yes" || echo "no")
+GIT_CHANGES=$(git -C "$ROOT_DIR" diff HEAD -- . ':(exclude)README.md' 2>/dev/null)
 
-if [ "$CURRENT_SHA" != "$STORED_SHA" ]; then
-  echo "Dockerfile changed, rebuilding image..."
+if [ "$IMAGE_EXISTS" = "no" ] || [ -n "$GIT_CHANGES" ]; then
+  echo "Rebuilding image..."
   docker build -t "$IMAGE" "$ROOT_DIR"
-  echo "$CURRENT_SHA" > "$SHA_FILE"
 else
-  echo "Dockerfile unchanged, skipping rebuild"
+  echo "No changes detected, skipping rebuild"
 fi
 
 LOG_FILE="$ROOT_DIR/server_$(date '+%Y-%m-%d_%H-%M-%S').log"
