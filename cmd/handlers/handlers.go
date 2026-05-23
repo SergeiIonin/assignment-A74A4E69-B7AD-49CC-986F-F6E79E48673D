@@ -32,7 +32,7 @@ func (h *Handlers) DashboardHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid ID format: %v", err)})
 		return
 	}
-	fmt.Println("id of request %d", id)
+	fmt.Printf("id of request %d\n", id)
 	dashboard, err := h.dashboardService.GetDashboard(c.Request.Context(), id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get dashboard: %v", err)})

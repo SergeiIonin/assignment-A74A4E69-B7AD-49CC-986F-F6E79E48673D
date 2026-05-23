@@ -1,5 +1,0 @@
-externalBaseUrl:  https://dummyjson.com
-userPath: /users
-todosPath: /todos
-host: localhost
-port: 8080
