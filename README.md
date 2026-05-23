@@ -15,12 +15,17 @@ This project aggregates and zips user data with their todo list into the dashboa
 ```
 
 ### How to Run This Project
+## Docker
 Portability and ease of use are our second top priority! This project is distributed as Docker container (everything is in containers nowadays, right?) and for testing you only need to follow these simple steps:
 1) Be Linux or MacOS user to build Docker image without pain
 2) Checkout this project
-3) Set `chmod +x scripts/test.sh`
+3) Set `chmod +x scripts/testDocker.sh`
 4) Check your intuition for always inspecting executable files
-5) Run `./scripts/test.sh`
+5) Run `./scripts/testDocker.sh`
 6) Review logs that flooded console or `.log` file created by each test run
 7) Report github issue if you noticed that any of 3 test runs took more than 2 seconds
 
+## Run Locally
+1) Checkout this project
+2) Set `chmod +x scripts/test.sh`
+3) Run `./scripts/test.sh`
