@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/SergeiIonin/assignment-A74A4E69-B7AD-49CC-986F-F6E79E48673D/internal/domain"
 	"github.com/SergeiIonin/assignment-A74A4E69-B7AD-49CC-986F-F6E79E48673D/internal/domain/fetcher"
@@ -28,6 +29,10 @@ func NewDashboardImpl(profileService ProfileService, todosService TodosService) 
 }
 
 func (d *DashboardImpl) GetDashboard(ctx context.Context, id int) (domain.Dashboard, error) {
+	if id <= 0 {
+		return domain.Dashboard{}, fmt.Errorf("id is not valid")
+	}
+
 	profileResChan := fetcher.Fetch(ctx, func(ctx context.Context) fetcher.Result[domain.Profile] {
 		profile, err := d.profileService.GetProfile(ctx, id)
 		return fetcher.Result[domain.Profile]{Data: profile, Error: err}

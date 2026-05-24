@@ -23,7 +23,7 @@ echo "Server started (PID $SERVER_PID), logs -> $LOG_FILE"
 
 echo "Waiting for server to be ready..."
 RETRIES=20
-until curl -s http://localhost:8080/dashboard/1 > /dev/null 2>&1; do
+until curl -s http://localhost:8080/dashboard/0 > /dev/null 2>&1; do
   RETRIES=$((RETRIES - 1))
   if [ "$RETRIES" -eq 0 ]; then
     echo "Server did not become ready in time"
@@ -33,12 +33,12 @@ until curl -s http://localhost:8080/dashboard/1 > /dev/null 2>&1; do
 done
 echo "Server is ready"
 
-echo "Testing dashboard endpoint for user id 1"
-curl http://localhost:8080/dashboard/1 | jq .
-echo "--------------"
-echo "Testing dashboard endpoint for user id 2"
-curl http://localhost:8080/dashboard/2 | jq .
-echo "--------------"
-echo "Testing dashboard endpoint for user id 3"
-curl http://localhost:8080/dashboard/3 | jq .
-echo "--------------"
+for id in {1..10}; do
+    echo "Testing dashboard endpoint for user id $id"
+    curl http://localhost:8080/dashboard/$id | jq .
+    echo "--------------"
+done
+
+echo "Calculating average response time"
+sleep 0.5  # let the log flush
+"$SCRIPT_DIR/calculateAvgResponse.sh" "$LOG_FILE"
