@@ -56,4 +56,4 @@ done
 
 echo "Calculating average response time"
 sleep 0.5  # let the log flush
-"$SCRIPT_DIR/calculateAvgResponse.sh" "$LOG_FILE"
+source "$SCRIPT_DIR/calculateAvgResponse.sh" "$LOG_FILE"

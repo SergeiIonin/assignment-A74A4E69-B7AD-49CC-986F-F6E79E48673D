@@ -1,17 +1,13 @@
-#!/bin/bash
-
-set -e
-
 LOG_FILE="$1"
 
 if [ -z "$LOG_FILE" ]; then
-  echo "Usage: $0 <log_file>"
-  exit 1
+  echo "Usage: source calculateAvgResponse.sh <log_file>"
+  return 1
 fi
 
 if [ ! -f "$LOG_FILE" ]; then
   echo "Log file not found: $LOG_FILE"
-  exit 1
+  return 1
 fi
 
 awk '
