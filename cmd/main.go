@@ -4,12 +4,17 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/SergeiIonin/assignment-A74A4E69-B7AD-49CC-986F-F6E79E48673D/cmd/handlers"
 	"github.com/SergeiIonin/assignment-A74A4E69-B7AD-49CC-986F-F6E79E48673D/config"
 	"github.com/SergeiIonin/assignment-A74A4E69-B7AD-49CC-986F-F6E79E48673D/internal"
-	"net"
-	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +25,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("Failed to load config: %v", err))
 	}
-	fmt.Printf("Config loaded: %+v\n", cfg)
+	log.Println("Config loaded: %+v", cfg)
 
 	httpClient := NewHTTPClient()
 
@@ -35,8 +40,34 @@ func main() {
 
 	r.GET("/dashboard/:id", handlers.ExecutionTimeHandler, handlers.DashboardHandler)
 
-	fmt.Println("Starting http server")
-	r.Run(cfg.Host + ":" + fmt.Sprintf("%d", cfg.Port))
+	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: r,
+	}
+	log.Println("Starting http server")
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 5 seconds.
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+	time.Sleep(2 * time.Second) // makes sense in scenario of kube-proxy hasn't yet updated iptables and app in the pod is still receiving traffic
+
+	log.Println("Shutting down server...")
+
+	ctxShutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctxShutdown); err != nil {
+		log.Fatalf("Server shutdown error: %v", err)
+	}
+
 }
 
 func NewHTTPClient() *http.Client {
